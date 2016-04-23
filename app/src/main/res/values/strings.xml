@@ -5,4 +5,5 @@
     <string name="register_button">Register</string>
     <string name="password_tw">Password</string>
     <string name="email_tw">E-mail</string>
+    <string name="name_tw">Name and surname</string>
 </resources>

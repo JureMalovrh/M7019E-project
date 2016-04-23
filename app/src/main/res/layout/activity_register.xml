@@ -7,6 +7,16 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="textPersonName|textCapWords"
+        android:ems="10"
+        android:id="@+id/name_surname_tw"
+        android:layout_weight="1"
+        android:hint="@string/name_tw"
+        android:padding="5dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:inputType="textEmailAddress"
         android:ems="10"
         android:id="@+id/email_tw"
@@ -23,32 +33,6 @@
         android:layout_weight="1"
         android:padding="5dp"
         android:hint="@string/password_tw"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
-
-        <Space
-            android:layout_width="70dp"
-            android:layout_height="match_parent"
-            />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/login_button"
-            android:id="@+id/login_button"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:onClick="loginButtonClicked"/>
-
-        <Space
-            android:layout_width="70dp"
-            android:layout_height="match_parent"
-            />
-    </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
