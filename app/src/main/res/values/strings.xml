@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Time_attandance</string>
+    <string name="wrong_username_password">Email or password you entered is not correct</string>
+    <string name="login_button">Login</string>
+    <string name="register_button">Register</string>
+    <string name="password_tw">Password</string>
+    <string name="email_tw">E-mail</string>
+</resources>
