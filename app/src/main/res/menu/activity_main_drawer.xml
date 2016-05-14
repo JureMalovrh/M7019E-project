@@ -3,33 +3,34 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:id="@+id/nav_main_page"
+            android:icon="@drawable/ic_main_page"
+            android:title="@string/menu_home_page"/>
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
+            android:id="@+id/nav_clocking"
+            android:icon="@drawable/ic_alarm_black_24dp"
+            android:title="@string/menu_new_clocking"/>
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:id="@+id/nav_all_bookings"
+            android:icon="@drawable/ic_timeline_black_24dp"
+            android:title="@string/menu_all_bookings"/>
+
         <item
-            android:id="@+id/nav_manage"
+            android:id="@+id/nav_settings"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:title="@string/menu_settings"/>
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/menu_utilities">
         <menu>
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:title="@string/menu_backup"/>
             <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_clear_black_24dp"
+                android:title="@string/menu_logout"/>
         </menu>
     </item>
 

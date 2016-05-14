@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        revision="22.0.1"
+        sha1="6f9497cdd3b70536ec6dd41b3bc6f906e831cecb">
+        <dex dex="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_ffc0ba2fb7c503afb6af344550d2ebef7d87f8a1\classes.dex" />
+    </item>
+    <item
+        jar="C:\Users\Jure\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\23.2.1\support-annotations-23.2.1.jar"
+        jumboMode="true"
+        revision="22.0.1"
+        sha1="ccb693bc0774fcb637246f7360de25b4af7df318">
+        <dex dex="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\transforms\dex\debug\folders\1000\10\support-annotations-23.2.1_895a65a22c93b13378b136c0c1323e28eb0ca263\classes.dex" />
+    </item>
+    <item
+        jar="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        revision="22.0.1"
+        sha1="0a52446ff48cbc54187cafa7a5d7398ef07ca95e">
+        <dex dex="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_4654ffa9295a666e829f4393f9882b9ae597ac4a\classes.dex" />
+    </item>
+    <item
+        jar="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.2.1\jars\classes.jar"
+        jumboMode="true"
+        revision="22.0.1"
+        sha1="3be474b1b21b31cf2fa93fe6bd641ae108d96452">
+        <dex dex="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-support-v4-23.2.1_44677a598522fc0a9868d5888c7f67c7fc1d901e\classes.dex" />
+    </item>
+    <item
+        jar="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.2.1\jars\libs\internal_impl-23.2.1.jar"
+        jumboMode="true"
+        revision="22.0.1"
+        sha1="607a3d0b8013b4ccbfeb0b7cb293351994e021fb">
+        <dex dex="D:\FRI\1_letnik_mag\Erasmus\M7019E\M7019E-project\NavigationDrawer\app\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-23.2.1_63417d770f9e80ace7088c9e50b69bad2fc0a6d1\classes.dex" />
+    </item>
+
+</items>

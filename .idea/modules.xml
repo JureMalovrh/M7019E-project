@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/M7019E-project.iml" filepath="$PROJECT_DIR$/M7019E-project.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Time_attandance.iml" filepath="$PROJECT_DIR$/Time_attandance.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

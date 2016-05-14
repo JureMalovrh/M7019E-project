@@ -22,6 +22,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     protected void loginButtonClicked(View v) {
+        /*TODO: create request to check if persons inserted data is correct, save his requests into SharedPreferences so he don't need to login every time */
+
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
 
     }
 }
