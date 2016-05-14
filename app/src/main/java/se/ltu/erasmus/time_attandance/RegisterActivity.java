@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -14,11 +15,11 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         email = (EditText) findViewById(R.id.email_tw);
-        setEmailListeners();
+        setEmailTextListeners();
 
     }
 
-    private void setEmailListeners() {
+    private void setEmailTextListeners() {
         email.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -34,9 +35,13 @@ public class RegisterActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 final String emailText = email.getText().toString();
                 if(!android.util.Patterns.EMAIL_ADDRESS.matcher(emailText).matches()){
-                    email.setError("Invalid Email Address");
+                    email.setError("Invalid email address");
                 }
             }
         });
+    }
+
+    public void registerButtonClicked(View v){
+        /*TODO: create a request to a web api, show loading screen, take care of responses, log user in automatically */
     }
 }
