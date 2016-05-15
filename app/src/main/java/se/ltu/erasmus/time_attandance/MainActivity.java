@@ -132,15 +132,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        if(id == R.id.nav_main_page){
 
-        if (id == R.id.nav_all_bookings) {
+        }
+        else if (id == R.id.nav_all_bookings) {
             Intent intent = new Intent(this, AllBookingsActivity.class);
             startActivity(intent);
 
 
         } else if (id == R.id.nav_clocking) {
 
-            AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+            /*AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
             float curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
             float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
             float leftVolume = curVolume/maxVolume;
@@ -148,16 +150,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             int priority = 1;
             int no_loop = 0;
             float normal_playback_rate = 1f;
-            soundPool.play(soundPool.load(this, SoundEffectConstants.CLICK, 1), leftVolume, rightVolume, priority, no_loop, normal_playback_rate);
+            soundPool.play(soundPool.load(this, SoundEffectConstants.CLICK, 1), leftVolume, rightVolume, priority, no_loop, normal_playback_rate);*/
 
 
             Intent intent = new Intent(this, NewClockingActivity.class);
             startActivity(intent);
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_settings) {
 
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_backup) {
 
         } else if (id == R.id.nav_logout) {
 
