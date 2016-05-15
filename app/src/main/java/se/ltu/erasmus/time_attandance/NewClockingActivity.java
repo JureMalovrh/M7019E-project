@@ -1,15 +1,21 @@
 package se.ltu.erasmus.time_attandance;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.GpsStatus;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,7 +25,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -31,10 +41,16 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Calendar;
+import java.util.Date;
+
 public class NewClockingActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
+        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GpsStatus.Listener, LocationListener {
     LocationManager lm;
     Location l;
+    boolean locationUpdated = false;
+    TextView longitude;
+    TextView latitude;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,28 +66,73 @@ public class NewClockingActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 Toast.makeText(this, "Location service must be turned on to use app", Toast.LENGTH_LONG).show();
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
         }
         lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        l = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
-        TextView tw1 = (TextView) findViewById(R.id.latitude);
-        TextView tw2 = (TextView) findViewById(R.id.longitude);
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.possible_access, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        assert tw1 != null;
-        tw1.setText(String.format("%f", l.getLatitude()));
-        assert tw2 != null;
-        tw2.setText(String.format("%f", l.getLongitude()));
+        spinner.setAdapter(adapter);
+        longitude = (TextView) findViewById(R.id.longitude);
+        latitude = (TextView) findViewById(R.id.latitude);
 
+
+    }
+
+    public void createMap(){
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
 
+    public Location getLocation() {
+        try {
+            lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 
+            // getting GPS status
+            boolean isGPSEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+            // getting network status
+            boolean isNetworkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            if (!isGPSEnabled && !isNetworkEnabled) {
+                // no network provider is enabled
+            } else {
+
+                if (isGPSEnabled) {
+                    if (l == null) {
+                        try{
+                            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);
+
+                        } catch (SecurityException e){
+                            e.printStackTrace();
+                        }
+
+                        Log.d("GPS", "GPS Enabled");
+                        if (lm != null) {
+                            try{
+                                l = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                            } catch (SecurityException e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return l;
     }
 
     @Override
@@ -173,7 +234,8 @@ public class NewClockingActivity extends AppCompatActivity
             l = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             double lat = l.getLatitude();
             double lon = l.getLongitude();
-
+            longitude.setText(""+lon);
+            latitude.setText(""+lat);
 
             CameraPosition position = CameraPosition.builder()
                     .target(new LatLng(lat,lon))
@@ -192,4 +254,77 @@ public class NewClockingActivity extends AppCompatActivity
 
 
     }
+
+    @Override
+    public void onGpsStatusChanged(int event) {
+        createMap();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.e("LOCATION", "Location changed");
+
+        if(!locationUpdated){
+            locationUpdated = true;
+            createMap();
+            try{
+                lm.removeUpdates(this);
+            } catch (SecurityException e){e.printStackTrace();}
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        Log.e("LOCATION", "Status changed");
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Log.e("LOCATION", "Provider enabled");
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    public void timeClicked(View v){
+        Calendar mcurrentTime = Calendar.getInstance();
+        int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+        int minute = mcurrentTime.get(Calendar.MINUTE);
+
+        TimePickerDialog mTimePicker;
+        mTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                Log.e("time", ""+selectedHour +" "+ selectedMinute);
+                TextView tw1 = (TextView) findViewById(R.id.textView3);
+                //TODO: check if time selected is in 15 min interval
+                tw1.setText(""+selectedHour+":"+selectedMinute);
+            }
+        }, hour, minute, true);//Yes 24 hour time
+        mTimePicker.setTitle("Select Time");
+        mTimePicker.show();
+
+    }
+
+    public void dateHandler(View v) {
+        Calendar mcurrentTime = Calendar.getInstance();
+        int day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
+        int month = mcurrentTime.get(Calendar.MONTH);
+        int year = mcurrentTime.get(Calendar.YEAR);
+        DatePickerDialog mDatePicker;
+
+        // TODO Auto-generated method stub
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                Log.e("time", ""+year +" "+ monthOfYear +" "+ dayOfMonth);
+                TextView tw1 = (TextView) findViewById(R.id.textView6);
+                //TODO: check if time selected is in 15 min interval
+                tw1.setText(""+year +" "+ monthOfYear +" "+ dayOfMonth);
+            }
+        }, year, month, day).show();
+    }
+
 }

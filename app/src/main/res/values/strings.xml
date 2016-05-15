@@ -26,6 +26,16 @@
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="title_activity_backup">BackupActivity</string>
 
+    <string name="wait_for_location">Please wait for location</string>
+
     <string name="google_app_id">775389483706</string>
+
+
+    <string-array name="possible_access">
+        <item>Arrival</item>
+        <item>Departure</item>
+        <item>Lunch departure</item>
+        <item>Lunch arrival</item>
+    </string-array>
 
 </resources>
