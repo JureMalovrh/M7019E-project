@@ -51,6 +51,8 @@ public class NewClockingActivity extends AppCompatActivity
     boolean locationUpdated = false;
     TextView longitude;
     TextView latitude;
+    TextView calendar;
+    TextView clock;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,8 +75,22 @@ public class NewClockingActivity extends AppCompatActivity
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
         }
-        lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        else {
+            lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+            if(lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null ) {
+                createMap();
+                lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper());
+            }
+            else {
+                if(lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) != null) {
+                    createMap();
+                    lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, this.getMainLooper());
+                }
+                lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper());
+                lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, this.getMainLooper());
+            }
+        }
+        //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.possible_access, android.R.layout.simple_spinner_item);
@@ -83,6 +99,23 @@ public class NewClockingActivity extends AppCompatActivity
         spinner.setAdapter(adapter);
         longitude = (TextView) findViewById(R.id.longitude);
         latitude = (TextView) findViewById(R.id.latitude);
+
+
+        longitude = (TextView) findViewById(R.id.longitude);
+        latitude = (TextView) findViewById(R.id.latitude);
+        calendar = (TextView) findViewById(R.id.calendar_tw);
+        clock = (TextView) findViewById(R.id.clock_tw);
+        Calendar mcurrentTime = Calendar.getInstance();
+        int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+        int minute = mcurrentTime.get(Calendar.MINUTE);
+
+        clock.setText(hour+":"+minute);
+
+        int day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
+        int month = mcurrentTime.get(Calendar.MONTH);
+        int year = mcurrentTime.get(Calendar.YEAR);
+        calendar.setText(day+"."+month+"."+year);
+
 
 
     }
@@ -109,7 +142,8 @@ public class NewClockingActivity extends AppCompatActivity
                 if (isGPSEnabled) {
                     if (l == null) {
                         try{
-                            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);
+                            lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper());
+                            //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 0, this);
 
                         } catch (SecurityException e){
                             e.printStackTrace();
@@ -232,6 +266,9 @@ public class NewClockingActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
         try {
             l = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(l == null){
+                l = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            }
             double lat = l.getLatitude();
             double lon = l.getLongitude();
             longitude.setText(""+lon);
@@ -298,7 +335,7 @@ public class NewClockingActivity extends AppCompatActivity
             @Override
             public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                 Log.e("time", ""+selectedHour +" "+ selectedMinute);
-                TextView tw1 = (TextView) findViewById(R.id.textView3);
+                TextView tw1 = (TextView) findViewById(R.id.clock_tw);
                 //TODO: check if time selected is in 15 min interval
                 tw1.setText(""+selectedHour+":"+selectedMinute);
             }
@@ -319,10 +356,10 @@ public class NewClockingActivity extends AppCompatActivity
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                Log.e("time", ""+year +" "+ monthOfYear +" "+ dayOfMonth);
-                TextView tw1 = (TextView) findViewById(R.id.textView6);
+
+                TextView tw1 = (TextView) findViewById(R.id.calendar_tw);
                 //TODO: check if time selected is in 15 min interval
-                tw1.setText(""+year +" "+ monthOfYear +" "+ dayOfMonth);
+                tw1.setText( dayOfMonth+"."+monthOfYear+"."+year);
             }
         }, year, month, day).show();
     }

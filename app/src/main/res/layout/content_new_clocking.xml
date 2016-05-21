@@ -20,33 +20,36 @@
             android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="TIME"
-            android:id="@+id/textView3"
+            android:id="@+id/clock_tw"
             android:onClick="timeClicked"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="40dp"
+            android:layout_gravity="bottom"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="DATE"
-            android:id="@+id/textView6"
+            android:id="@+id/calendar_tw"
             android:onClick="dateHandler"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="40dp"
+            android:layout_gravity="bottom"/>
     </LinearLayout>
 
     <Spinner
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/spinner"
-        android:layout_weight="1"
         android:layout_gravity="center"
         android:layout_margin="3dp"/>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_height="42dp"
+        >
 
         <TextView
             android:layout_width="match_parent"
