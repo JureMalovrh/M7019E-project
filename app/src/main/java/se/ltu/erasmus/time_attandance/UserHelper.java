@@ -24,13 +24,23 @@ public class UserHelper extends Application{
         this.id = id;
     }
 
-    String displayname;
-    String id;
+    String displayname = "";
+    String id = "";
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    String email = "";
     public UserHelper(){}
 
     public String getLoginApi(){ return server+"auth/signin";}
     public String getSignUpApi(){ return server+"auth/signup";}
+    public String getLastBookingApi() {return  server+"bookings/user/"+ id;}
 
 }
 

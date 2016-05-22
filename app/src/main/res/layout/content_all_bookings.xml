@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New Text"
-        android:id="@+id/textView4"
+        android:id="@+id/maincontent_time"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="180dp"/>
@@ -27,8 +27,8 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
-        android:id="@+id/textView5"
-        android:layout_below="@+id/textView4"
+        android:id="@+id/maincontent_place"
+        android:layout_below="@+id/maincontent_time"
         android:layout_alignParentStart="true"
         android:layout_marginTop="88dp"/>
 
@@ -37,6 +37,6 @@
         android:layout_height="wrap_content"
         android:text="New Button"
         android:id="@+id/button"
-        android:layout_above="@+id/textView5"
-        android:layout_toEndOf="@+id/textView5"/>
+        android:layout_above="@+id/maincontent_place"
+        android:layout_toEndOf="@+id/maincontent_place"/>
 </RelativeLayout>

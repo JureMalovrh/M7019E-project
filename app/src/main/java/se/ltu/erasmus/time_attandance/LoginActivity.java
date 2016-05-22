@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -81,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
 
-            urlString = "http://52.30.221.7:3000/api/auth/signin";
+            urlString = helper.getLoginApi();
         }
 
         @Override
@@ -109,9 +110,11 @@ public class LoginActivity extends AppCompatActivity {
                     }
                     else {
                         status = true;
+                        UserHelper helper = (UserHelper) getApplicationContext();
                         helper.setId(jRoot.getString("_id"));
                         helper.setDisplayname(jRoot.getString("displayName"));
-
+                        helper.setEmail(jRoot.getString("email"));
+                        int i = 0;
                     }
 
                 } catch (JSONException e) {

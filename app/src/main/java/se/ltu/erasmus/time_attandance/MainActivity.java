@@ -10,6 +10,7 @@ import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.media.SoundPool;
 import android.media.ToneGenerator;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -31,18 +32,37 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.ViewFlipper;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     SoundPool soundPool;
+    UserHelper helper;
+
+    TextView location;
+    TextView time;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        helper = (UserHelper) getApplicationContext();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -62,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -72,24 +91,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        View navHeaderView = navigationView.inflateHeaderView(R.layout.nav_header_main);
+        TextView h_name= (TextView) navHeaderView.findViewById(R.id.header_displayname);
+        h_name.setText(helper.getDisplayname());
+        TextView h_email= (TextView) navHeaderView.findViewById(R.id.header_email);
+        h_email.setText(helper.getEmail());
+
+        TextView main_name = (TextView) findViewById(R.id.maincontent_displayname);
+        main_name.setText(helper.getDisplayname());
 
 
+        location = (TextView) findViewById(R.id.maincontent_place);
+        time = (TextView) findViewById(R.id.maincontent_time);
 
-
-
-
-
-
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            soundPool = new SoundPool.Builder().setMaxStreams(3).setAudioAttributes(new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()).build();
-        } else {
-            soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 100);
-
-        }
-
-
+        getLastBooking();
 
 
 
@@ -167,4 +182,106 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    public void getLastBooking() {
+        new LastBookingHandler(this).execute();
+    }
+
+
+    public class LastBookingHandler extends AsyncTask<Void, Void, Boolean> {
+
+        String urlString;
+
+        private Context context;
+
+        public LastBookingHandler(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            urlString = helper.getLastBookingApi();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            HttpURLConnection urlConnection = null;
+            URL url = null;
+            try {
+                url = new URL(urlString);
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+
+                urlConnection.setReadTimeout(10000 /* milliseconds */);
+                urlConnection.setConnectTimeout(15000 /* milliseconds */);
+
+                //urlConnection.setDoOutput(true);
+                urlConnection.connect();
+
+                if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    BufferedReader br=new BufferedReader(new InputStreamReader(url.openStream()));
+                    String jsonString;
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line+"\n");
+                    }
+                    br.close();
+                    jsonString = sb.toString();
+
+                    System.out.println("JSON: " + jsonString);
+                    JSONObject jo = new JSONObject(jsonString);
+
+                    if(jo.has("message")){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                location.setText("No bookings yet");
+                                time.setText("No bookings yet");
+                            }
+                        });
+
+                    }
+                    else {
+
+                        String day = jo.getString("day");
+                        String month = jo.getString("month");
+                        String year = jo.getString("year");
+                        String hour = jo.getString("hour");
+                        String minute = jo.getString("minute");
+
+                        String latitude = jo.getString("latitude");
+                        String longitude = jo.getString("longitude");
+
+                        final String timeString = "Time: "+ day +". "+month+". "+year +", "+ hour+": "+minute;
+                        final String locationString = "Location: "+ latitude +" : "+longitude;
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                location.setText(locationString);
+                                time.setText(timeString);
+                            }
+                        });
+                    }
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+
+        }
+    }
+
+
 }

@@ -133,6 +133,7 @@ public class RegisterActivity extends AppCompatActivity {
                         status = true;
                         helper.setId(jRoot.getString("_id"));
                         helper.setDisplayname(jRoot.getString("displayName"));
+                        helper.setEmail(jRoot.getString("email"));
 
                     }
 
