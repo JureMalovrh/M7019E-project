@@ -255,13 +255,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         String hour = jo.getString("hour");
                         String minute = jo.getString("minute");
 
-                        String latitude = jo.getString("latitude");
-                        String longitude = jo.getString("longitude");
+
+                        Double latitude = jo.getDouble("latitude");
+                        Double longitude = jo.getDouble("longitude");
 
                         String typeOfEvent = jo.getString("typeOfEvent");
 
                         final String timeString = "Time: "+ day +". "+month+". "+year +", "+ hour+": "+minute;
-                        final String locationString = "Location: "+ latitude +" : "+longitude;
+                        final String locationString = "Location: "+ String.format("%.2f", latitude) +" : "+String.format("%.2f", longitude);
                         final String eventString = "Event: "+typeOfEvent;
 
 

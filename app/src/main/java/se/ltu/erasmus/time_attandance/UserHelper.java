@@ -42,6 +42,8 @@ public class UserHelper extends Application{
     public String getSignUpApi(){ return server+"auth/signup";}
     public String getLastBookingApi() {return  server+"bookings/user/"+ id;}
     public String getNewBookingApi() {return  server+"bookings";}
+    //http://52.30.221.7:3000/api/bookings/list/574197e7e852934362e56faa
+    public String getAllBookingsApi() {return  server+"bookings/list/"+id;}
 
 }
 

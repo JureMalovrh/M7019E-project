@@ -6,7 +6,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.widget.ThemedSpinnerAdapter;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,7 +17,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,11 +33,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class AllBookingsActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     UserHelper helper;
+    ListView listview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +49,6 @@ public class AllBookingsActivity extends AppCompatActivity
         setContentView(R.layout.activity_all_bookings);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -48,6 +59,10 @@ public class AllBookingsActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setCheckedItem(R.id.nav_all_bookings);
         navigationView.setNavigationItemSelectedListener(this);
+
+        listview = (ListView) findViewById(R.id.listview);
+
+        new AllBookingsHandler(this).execute();
     }
 
     @Override
@@ -123,21 +138,56 @@ public class AllBookingsActivity extends AppCompatActivity
         return true;
     }
 
+    public class MySimpleArrayAdapter extends ArrayAdapter<String> {
+        private final Context context;
+        private final String[] values;
 
-    public class LastBookingHandler extends AsyncTask<Void, Void, Boolean> {
+        public MySimpleArrayAdapter(Context context, String[] values) {
+            super(context, -1, values);
+            this.context = context;
+            this.values = values;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = (LayoutInflater) context
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View rowView = inflater.inflate(R.layout.rowlayout, parent, false);
+            TextView textView = (TextView) rowView.findViewById(R.id.label);
+            ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
+            textView.setText(values[position]);
+            // change the icon for Windows and iPhone
+            String s = values[position];
+            //Log.e("s", s);
+            if (s.startsWith("Arrival")) {
+                imageView.setImageResource(R.drawable.ic_alarm_black_24dp);
+            } else if(s.startsWith("Departure")) {
+                imageView.setImageResource(R.drawable.ic_alarm_on_black_24dp);
+            } else if(s.startsWith("Lunch departure")){
+                imageView.setImageResource(R.drawable.ic_pause_light);
+            } else {
+                imageView.setImageResource(R.drawable.ic_skip_next_black_24dp);
+            }
+
+            return rowView;
+        }
+    }
+
+
+    public class AllBookingsHandler extends AsyncTask<Void, Void, Boolean> {
 
         String urlString;
 
         private Context context;
 
-        public LastBookingHandler(Context context) {
+        public AllBookingsHandler(Context context) {
             this.context = context;
         }
 
         @Override
         protected void onPreExecute() {
 
-            urlString = helper.getLastBookingApi();
+            urlString = helper.getAllBookingsApi();
         }
 
         @Override
@@ -168,42 +218,34 @@ public class AllBookingsActivity extends AppCompatActivity
                     jsonString = sb.toString();
 
                     System.out.println("JSON: " + jsonString);
-                    JSONObject jo = new JSONObject(jsonString);
+                    JSONArray jo = new JSONArray(jsonString);
+                    final String[] values = new String[jo.length()] ;
+                    for(int i = 0; i < jo.length(); i++){
+                        JSONObject jsonObj = jo.getJSONObject(i);
+                        String tmpString;
+                        String event = jsonObj.getString("typeOfEvent");
+                        String year = jsonObj.getString("year");
+                        String month = jsonObj.getString("month");
+                        String day = jsonObj.getString("day");
+                        String hour = jsonObj.getString("hour");
+                        String minute = jsonObj.getString("minute");
 
-                    if(jo.has("message")){
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                            }
-                        });
-
+                        tmpString = event+", "+ day+". "+month+". "+year+", "+hour+": "+minute;
+                        values[i] = tmpString;
                     }
-                    else {
-
-                        String day = jo.getString("day");
-                        String month = jo.getString("month");
-                        String year = jo.getString("year");
-                        String hour = jo.getString("hour");
-                        String minute = jo.getString("minute");
-
-                        String latitude = jo.getString("latitude");
-                        String longitude = jo.getString("longitude");
-
-                        String typeOfEvent = jo.getString("typeOfEvent");
-
-                        final String timeString = "Time: "+ day +". "+month+". "+year +", "+ hour+": "+minute;
-                        final String locationString = "Location: "+ latitude +" : "+longitude;
-                        final String eventString = "Event: "+typeOfEvent;
 
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final MySimpleArrayAdapter adapter = new MySimpleArrayAdapter(getApplicationContext(), values);
+                            listview.setAdapter(adapter);
+                        }
+                    });
 
-                            }
-                        });
-                    }
+
+
+                    System.out.println(jo.toString());
 
                 }
             } catch (IOException e) {
@@ -219,4 +261,7 @@ public class AllBookingsActivity extends AppCompatActivity
 
         }
     }
+
+
+
 }
