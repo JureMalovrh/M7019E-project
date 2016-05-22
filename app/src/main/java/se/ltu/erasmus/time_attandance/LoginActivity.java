@@ -141,10 +141,11 @@ public class LoginActivity extends AppCompatActivity {
 
             URL url;
             String response = "";
+            HttpURLConnection conn=null;
             try {
                 url = new URL(requestURL);
 
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(5000);
                 conn.setConnectTimeout(10000);
                 conn.setRequestMethod("POST");
@@ -179,6 +180,8 @@ public class LoginActivity extends AppCompatActivity {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            }finally {
+                conn.disconnect();
             }
 
             return response;

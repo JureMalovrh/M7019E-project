@@ -10,6 +10,7 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
@@ -41,8 +42,19 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class NewClockingActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GpsStatus.Listener, LocationListener {
@@ -53,9 +65,25 @@ public class NewClockingActivity extends AppCompatActivity
     TextView latitude;
     TextView calendar;
     TextView clock;
+    UserHelper helper;
+
+
+    int minute;
+    int hour;
+    int day;
+    int month;
+    int year;
+    double latitudeVal;
+    double longitudeVal;
+    String typeOfEvent;
+    Spinner spinner;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        helper = (UserHelper) getApplicationContext();
         setContentView(R.layout.activity_new_clocking);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -92,28 +120,25 @@ public class NewClockingActivity extends AppCompatActivity
         }
         //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.possible_access, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         spinner.setAdapter(adapter);
-        longitude = (TextView) findViewById(R.id.longitude);
-        latitude = (TextView) findViewById(R.id.latitude);
-
 
         longitude = (TextView) findViewById(R.id.longitude);
         latitude = (TextView) findViewById(R.id.latitude);
         calendar = (TextView) findViewById(R.id.calendar_tw);
         clock = (TextView) findViewById(R.id.clock_tw);
         Calendar mcurrentTime = Calendar.getInstance();
-        int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-        int minute = mcurrentTime.get(Calendar.MINUTE);
+        hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+        minute = mcurrentTime.get(Calendar.MINUTE);
 
         clock.setText(hour+":"+minute);
 
-        int day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
-        int month = mcurrentTime.get(Calendar.MONTH);
-        int year = mcurrentTime.get(Calendar.YEAR);
+        day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
+        month = mcurrentTime.get(Calendar.MONTH);
+        year = mcurrentTime.get(Calendar.YEAR);
         calendar.setText(day+"."+month+"."+year);
 
 
@@ -325,10 +350,25 @@ public class NewClockingActivity extends AppCompatActivity
 
     }
 
+    public void registerNewEvent(View v) {
+        if(longitude.getText().toString().equals("Wait for location")){
+            Toast.makeText(this, "Location not yet received. Please wait.", Toast.LENGTH_LONG).show();
+        }
+        else{
+
+            longitudeVal = Double.parseDouble(longitude.getText().toString());
+            latitudeVal = Double.parseDouble(latitude.getText().toString());
+
+            typeOfEvent = spinner.getSelectedItem().toString();
+            new NewEventHandler(this).execute();
+        }
+    }
+
     public void timeClicked(View v){
         Calendar mcurrentTime = Calendar.getInstance();
-        int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-        int minute = mcurrentTime.get(Calendar.MINUTE);
+
+        hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+        minute = mcurrentTime.get(Calendar.MINUTE);
 
         TimePickerDialog mTimePicker;
         mTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
@@ -338,6 +378,8 @@ public class NewClockingActivity extends AppCompatActivity
                 TextView tw1 = (TextView) findViewById(R.id.clock_tw);
                 //TODO: check if time selected is in 15 min interval
                 tw1.setText(""+selectedHour+":"+selectedMinute);
+                hour = selectedHour;
+                minute = selectedMinute;
             }
         }, hour, minute, true);//Yes 24 hour time
         mTimePicker.setTitle("Select Time");
@@ -347,21 +389,131 @@ public class NewClockingActivity extends AppCompatActivity
 
     public void dateHandler(View v) {
         Calendar mcurrentTime = Calendar.getInstance();
-        int day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
-        int month = mcurrentTime.get(Calendar.MONTH);
-        int year = mcurrentTime.get(Calendar.YEAR);
+        day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
+        month = mcurrentTime.get(Calendar.MONTH);
+        year = mcurrentTime.get(Calendar.YEAR);
         DatePickerDialog mDatePicker;
 
         // TODO Auto-generated method stub
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+            public void onDateSet(DatePicker view, int yearC, int monthOfYear, int dayOfMonth) {
 
                 TextView tw1 = (TextView) findViewById(R.id.calendar_tw);
                 //TODO: check if time selected is in 15 min interval
-                tw1.setText( dayOfMonth+"."+monthOfYear+"."+year);
+                tw1.setText( dayOfMonth+"."+monthOfYear+"."+yearC);
+                day = dayOfMonth;
+                month = monthOfYear;
+                year = yearC;
             }
         }, year, month, day).show();
+    }
+
+
+    public class NewEventHandler extends AsyncTask<Void, Void, Boolean> {
+
+        String urlString;
+
+        private Context context;
+
+        public NewEventHandler(Context contex) {
+            this.context = contex;
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            urlString = helper.getNewBookingApi();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            boolean status = false;
+            String response = "";
+            try {
+                response = performPostCall(urlString, new HashMap<String, Object>() {
+                    private static final long serialVersionUID = 1L;
+                    {
+                        put("Accept", "application/json");
+                        put("Content-Type", "application/json");
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (!response.equalsIgnoreCase("")) {
+                try {
+
+                    JSONObject jRoot = new JSONObject(response);
+                    System.out.println(jRoot.toString());
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                status = false;
+            }
+            return status;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            urlString = helper.getNewBookingApi();
+        }
+
+        public String performPostCall(String requestURL, HashMap<String, Object> postDataParams) {
+
+            URL url;
+            String response = "";
+            try {
+                url = new URL(requestURL);
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(5000);
+                conn.setConnectTimeout(10000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                conn.setRequestProperty("Content-Type", "application/json");
+                JSONObject root = new JSONObject();
+                //
+                root.put("user", helper.getId());
+                root.put("minute", minute);
+                root.put("hour", hour);
+                root.put("day", day);
+                root.put("month", month);
+                root.put("year", year);
+                root.put("longitude", longitudeVal);
+                root.put("latitude", latitudeVal);
+                root.put("typeOfEvent", typeOfEvent);
+
+
+
+                String str = root.toString();
+                Log.e("str", str);
+                byte[] outputBytes = str.getBytes("UTF-8");
+                OutputStream os = conn.getOutputStream();
+                os.write(outputBytes);
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String line;
+                    BufferedReader br = new BufferedReader(new InputStreamReader(
+                            conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        response += line;
+                    }
+                } else {
+                    response = "";
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return response;
+        }
     }
 
 }

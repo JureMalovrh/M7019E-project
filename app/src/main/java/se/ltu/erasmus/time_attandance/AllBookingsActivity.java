@@ -1,9 +1,12 @@
 package se.ltu.erasmus.time_attandance;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,24 +17,27 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class AllBookingsActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    UserHelper helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        helper = (UserHelper) getApplicationContext();
         setContentView(R.layout.activity_all_bookings);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -115,5 +121,102 @@ public class AllBookingsActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    public class LastBookingHandler extends AsyncTask<Void, Void, Boolean> {
+
+        String urlString;
+
+        private Context context;
+
+        public LastBookingHandler(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            urlString = helper.getLastBookingApi();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            HttpURLConnection urlConnection = null;
+            URL url = null;
+            try {
+                url = new URL(urlString);
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+
+                urlConnection.setReadTimeout(10000 /* milliseconds */);
+                urlConnection.setConnectTimeout(15000 /* milliseconds */);
+
+                //urlConnection.setDoOutput(true);
+                urlConnection.connect();
+
+                if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    BufferedReader br=new BufferedReader(new InputStreamReader(url.openStream()));
+                    String jsonString;
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line+"\n");
+                    }
+                    br.close();
+                    jsonString = sb.toString();
+
+                    System.out.println("JSON: " + jsonString);
+                    JSONObject jo = new JSONObject(jsonString);
+
+                    if(jo.has("message")){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                            }
+                        });
+
+                    }
+                    else {
+
+                        String day = jo.getString("day");
+                        String month = jo.getString("month");
+                        String year = jo.getString("year");
+                        String hour = jo.getString("hour");
+                        String minute = jo.getString("minute");
+
+                        String latitude = jo.getString("latitude");
+                        String longitude = jo.getString("longitude");
+
+                        String typeOfEvent = jo.getString("typeOfEvent");
+
+                        final String timeString = "Time: "+ day +". "+month+". "+year +", "+ hour+": "+minute;
+                        final String locationString = "Location: "+ latitude +" : "+longitude;
+                        final String eventString = "Event: "+typeOfEvent;
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                            }
+                        });
+                    }
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+
+        }
     }
 }

@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     TextView location;
     TextView time;
+    TextView event;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         location = (TextView) findViewById(R.id.maincontent_place);
         time = (TextView) findViewById(R.id.maincontent_time);
+        event = (TextView) findViewById(R.id.maincontent_event);
 
         getLastBooking();
 
@@ -240,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             public void run() {
                                 location.setText("No bookings yet");
                                 time.setText("No bookings yet");
+                                event.setText("No bookings yet");
                             }
                         });
 
@@ -255,8 +258,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         String latitude = jo.getString("latitude");
                         String longitude = jo.getString("longitude");
 
+                        String typeOfEvent = jo.getString("typeOfEvent");
+
                         final String timeString = "Time: "+ day +". "+month+". "+year +", "+ hour+": "+minute;
                         final String locationString = "Location: "+ latitude +" : "+longitude;
+                        final String eventString = "Event: "+typeOfEvent;
 
 
                         runOnUiThread(new Runnable() {
@@ -264,6 +270,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             public void run() {
                                 location.setText(locationString);
                                 time.setText(timeString);
+                                event.setText(eventString);
                             }
                         });
                     }

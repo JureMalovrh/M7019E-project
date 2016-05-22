@@ -7,10 +7,10 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="245dp"
         android:id="@+id/imageView2"
         android:src="@drawable/beach_pic"
-        android:layout_weight="1.5"/>
+        android:layout_weight="1"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -56,4 +56,12 @@
         android:id="@+id/maincontent_place"
         android:layout_gravity="center_horizontal"
         />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Where"
+        android:id="@+id/maincontent_event"
+        android:layout_gravity="center_horizontal"/>
 </LinearLayout>

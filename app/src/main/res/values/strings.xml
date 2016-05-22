@@ -29,6 +29,7 @@
     <string name="title_activity_backup">BackupActivity</string>
 
     <string name="wait_for_location">Wait for location</string>
+    <string name="new_event">New clocking</string>
 
     <string name="google_app_id">775389483706</string>
 
