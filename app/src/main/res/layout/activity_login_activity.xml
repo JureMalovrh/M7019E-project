@@ -9,10 +9,10 @@
         android:layout_height="wrap_content"
         android:inputType="textEmailAddress"
         android:ems="10"
-        android:id="@+id/email_tw"
+        android:id="@+id/username_tw"
         android:padding="5dp"
         android:layout_weight="1"
-        android:hint="@string/email_tw"/>
+        android:hint="@string/username"/>
 
     <EditText
         android:layout_width="match_parent"
@@ -80,7 +80,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/textView2"
+        android:id="@+id/error_tw"
         android:layout_weight="1"
         android:visibility="invisible"
         android:textColor="#f20000"

@@ -5,7 +5,9 @@
     <string name="register_button">Register</string>
     <string name="password_tw">Password</string>
     <string name="email_tw">E-mail</string>
-    <string name="name_tw">Name and surname</string>
+    <string name="username">Username</string>
+    <string name="name_tw">Name</string>
+    <string name="surname_tw">Surname</string>
     <string name="title_activity_main">MainActivity</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
