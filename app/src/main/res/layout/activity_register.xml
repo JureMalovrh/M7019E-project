@@ -9,9 +9,29 @@
         android:layout_height="wrap_content"
         android:inputType="textPersonName|textCapWords"
         android:ems="10"
-        android:id="@+id/name_surname_tw"
+        android:id="@+id/name_tw"
         android:layout_weight="1"
         android:hint="@string/name_tw"
+        android:padding="5dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName|textCapWords"
+        android:ems="10"
+        android:id="@+id/surname_tw"
+        android:layout_weight="1"
+        android:hint="@string/surname_tw"
+        android:padding="5dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName|textCapWords"
+        android:ems="10"
+        android:id="@+id/username_tw"
+        android:layout_weight="1"
+        android:hint="@string/username"
         android:padding="5dp"/>
 
     <EditText
@@ -64,11 +84,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/textView2"
+        android:id="@+id/error_tw"
         android:layout_weight="1"
         android:visibility="invisible"
         android:textColor="#f20000"
-        android:text="@string/wrong_username_password"
         android:textStyle="italic"
         android:singleLine="false"
         android:gravity="center_vertical|center_horizontal"/>
@@ -76,6 +95,6 @@
     <Space
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="11"/>
+        android:layout_weight="7"/>
 
 </LinearLayout>
