@@ -175,8 +175,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_backup) {
-
+            Intent intent = new Intent(this, BackupActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_logout) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            helper.setId(null);
+            helper.setDisplayname(null);
+            helper.setEmail(null);
+            startActivity(intent);
 
         }
 
@@ -256,13 +262,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         String minute = jo.getString("minute");
 
 
-                        Double latitude = jo.getDouble("latitude");
-                        Double longitude = jo.getDouble("longitude");
+                        String latitude = String.format("%.2f", jo.getDouble("latitude"));
+                        String longitude = String.format("%.2f", jo.getDouble("longitude"));
 
                         String typeOfEvent = jo.getString("typeOfEvent");
 
                         final String timeString = "Time: "+ day +". "+month+". "+year +", "+ hour+": "+minute;
-                        final String locationString = "Location: "+ String.format("%.2f", latitude) +" : "+String.format("%.2f", longitude);
+                        final String locationString = "Location: "+  latitude +" : "+longitude;
                         final String eventString = "Event: "+typeOfEvent;
 
 

@@ -150,49 +150,6 @@ public class NewClockingActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
     }
 
-    public Location getLocation() {
-        try {
-            lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
-            // getting GPS status
-            boolean isGPSEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-            // getting network status
-            boolean isNetworkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-            if (!isGPSEnabled && !isNetworkEnabled) {
-                // no network provider is enabled
-            } else {
-
-                if (isGPSEnabled) {
-                    if (l == null) {
-                        try{
-                            lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper());
-                            //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 0, this);
-
-                        } catch (SecurityException e){
-                            e.printStackTrace();
-                        }
-
-                        Log.d("GPS", "GPS Enabled");
-                        if (lm != null) {
-                            try{
-                                l = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-                            } catch (SecurityException e){
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return l;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,

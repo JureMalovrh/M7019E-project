@@ -30,6 +30,8 @@
 
     <string name="wait_for_location">Wait for location</string>
     <string name="new_event">New clocking</string>
+    <string name="upload_backup">Upload backup</string>
+    <string name="download_backup">Download backup</string>
 
     <string name="google_app_id">775389483706</string>
 

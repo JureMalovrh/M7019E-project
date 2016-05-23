@@ -8,6 +8,17 @@ import android.app.Application;
 public class UserHelper extends Application{
     String server = "http://52.30.221.7:3000/api/";
 
+    public String getFilename() {
+        return filename+"_"+id+".json";
+    }
+
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    String filename = "backup";
+
     public String getDisplayname() {
         return displayname;
     }
@@ -44,6 +55,8 @@ public class UserHelper extends Application{
     public String getNewBookingApi() {return  server+"bookings";}
     //http://52.30.221.7:3000/api/bookings/list/574197e7e852934362e56faa
     public String getAllBookingsApi() {return  server+"bookings/list/"+id;}
+    public String uploadBookingsApi() { return  server+"bookings/backup/load";}
+    public String downloadBookingsApi() { return  server+"bookings/backup/save"+id;}
 
 }
 
