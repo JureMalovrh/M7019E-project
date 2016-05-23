@@ -1,9 +1,12 @@
 package se.ltu.erasmus.time_attandance;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,10 +16,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 public class SettingsActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    EditText time_recording;
+    EditText time_occurance;
+    EditText server;
+    UserHelper helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,14 +32,7 @@ public class SettingsActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        helper = (UserHelper) getApplicationContext();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -41,6 +42,18 @@ public class SettingsActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        time_recording = (EditText) findViewById(R.id.seconds_recording);
+        time_occurance = (EditText) findViewById(R.id.time_notification);
+        server = (EditText) findViewById(R.id.server_address_tw);
+        server.setText(helper.getServer());
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        int seconds = sharedPref.getInt(getString(R.string.time_recording_seconds), helper.LENGTH_SOUND_RECORDING);
+        int minutes = sharedPref.getInt(getString(R.string.time_notification_minutes), helper.SOUND_RECORDING_OCCURANCES);
+
+        time_recording.setText(seconds+"");
+        time_occurance.setText(minutes+"");
     }
 
     @Override
@@ -86,21 +99,7 @@ public class SettingsActivity extends AppCompatActivity
         else if (id == R.id.nav_all_bookings) {
             Intent intent = new Intent(this, AllBookingsActivity.class);
             startActivity(intent);
-
-
         } else if (id == R.id.nav_clocking) {
-
-            /*AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-            float curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            float leftVolume = curVolume/maxVolume;
-            float rightVolume = curVolume/maxVolume;
-            int priority = 1;
-            int no_loop = 0;
-            float normal_playback_rate = 1f;
-            soundPool.play(soundPool.load(this, SoundEffectConstants.CLICK, 1), leftVolume, rightVolume, priority, no_loop, normal_playback_rate);*/
-
-
             Intent intent = new Intent(this, NewClockingActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
@@ -114,5 +113,17 @@ public class SettingsActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void saveSettings(View v) {
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        int seconds_rec = Integer.parseInt(time_recording.getText().toString());
+        int notif_occ = Integer.parseInt(time_occurance.getText().toString());
+        editor.putInt(getString(R.string.time_recording_seconds), seconds_rec);
+        editor.putInt(getString(R.string.time_notification_minutes), notif_occ);
+        editor.commit();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 }

@@ -6,6 +6,17 @@ import android.app.Application;
  * Created by Jure on 21.5.2016.
  */
 public class UserHelper extends Application{
+
+    public int LENGTH_SOUND_RECORDING = 5;
+    public int SOUND_RECORDING_OCCURANCES = 60;
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
+    }
+
     String server = "http://52.30.221.7:3000/api/";
 
     public String getFilename() {

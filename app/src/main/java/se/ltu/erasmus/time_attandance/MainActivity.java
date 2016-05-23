@@ -1,7 +1,9 @@
 package se.ltu.erasmus.time_attandance;
 
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.location.SettingInjectorService;
@@ -46,6 +48,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -108,6 +111,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         getLastBooking();
 
+        Intent intent = new Intent(this, RawSoundRecordingActivity.class);
+        intent.putExtra("id", helper.getId());
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        long recurring = (30 * 60000);  // in milliseconds
+        am.setRepeating(AlarmManager.RTC, Calendar.getInstance().getTimeInMillis(), recurring, sender);
 
 
     }
@@ -173,7 +182,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Intent intent = new Intent(this, NewClockingActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
-
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_backup) {
             Intent intent = new Intent(this, BackupActivity.class);
             startActivity(intent);

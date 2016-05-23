@@ -32,6 +32,16 @@
     <string name="new_event">New clocking</string>
     <string name="upload_backup">Upload backup</string>
     <string name="download_backup">Download backup</string>
+    <string name="server_address">Server address</string>
+    <string name="sound_recording">How often would you like to record sound (in minutes)</string>
+    <string name="length_sound_recording">How long would you like to take sound (in seconds)</string>
+    <string name="save">Save</string>
+
+
+    <string name="time_recording_seconds">time_recording_seconds</string>
+    <string name="time_notification_minutes">time_notification_minutes</string>
+
+
 
     <string name="google_app_id">775389483706</string>
 
