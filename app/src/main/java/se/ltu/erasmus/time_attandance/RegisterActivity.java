@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +40,10 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setViewHandlers();
+    }
+    /* To get all handlers of the different EditText etc. */
+    private void setViewHandlers() {
         helper = ((UserHelper) getApplicationContext());
         setContentView(R.layout.activity_register);
 
@@ -50,9 +55,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         error = (TextView) findViewById(R.id.error_tw);
         setEmailTextListeners();
-
     }
-
+    /* Listeners for change in email EditText */
     private void setEmailTextListeners() {
         email.addTextChangedListener(new TextWatcher() {
             @Override
@@ -79,20 +83,17 @@ public class RegisterActivity extends AppCompatActivity {
         new RegisterHandler(this).execute();
     }
 
-
+    /** Handler for a Registration, creates a POST request with JSON object and registrate the user */
     public class RegisterHandler extends AsyncTask<Void, Void, Boolean> {
 
         String urlString;
-
         private Context context;
-
         public RegisterHandler(Context contex) {
             this.context = contex;
         }
 
         @Override
         protected void onPreExecute() {
-
             urlString = helper.getSignUpApi();
         }
 
@@ -101,47 +102,36 @@ public class RegisterActivity extends AppCompatActivity {
             boolean status = false;
             String response = "";
             try {
-                response = performPostCall(urlString, new HashMap<String, String>() {
-                    private static final long serialVersionUID = 1L;
-                    {
-                        put("Accept", "application/json");
-                        put("Content-Type", "application/json");
-                    }
-                });
+                response = performPostCall(urlString);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            if (!response.equalsIgnoreCase("")) {
+            if (!response.equals("")) {
                 try {
-
                     JSONObject jRoot = new JSONObject(response);
-                    Log.e("jsonobh", jRoot.toString());
-                    if(jRoot.has("message")){
+                    if(jRoot.has("message")){ //if we have message, maybe some problem
                         status = false;
                         final String mes = jRoot.getString("message");
-                        Log.e("mes", mes);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 error.setText(mes);
                             }
                         });
-
                     }
                     else {
                         status = true;
+                        /* Store new user into helper class */
                         helper.setId(jRoot.getString("_id"));
                         helper.setDisplayname(jRoot.getString("displayName"));
                         helper.setEmail(jRoot.getString("email"));
-
                     }
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             } else {
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -155,46 +145,41 @@ public class RegisterActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Boolean result) {
-            if (result) {
+            if (result) { // if it is ok, go to main activity with new user
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
             }
-
         }
-
-        public String performPostCall(String requestURL, HashMap<String, String> postDataParams) {
-
+        /* Create POST call, create JSON */
+        public String performPostCall(String requestURL) {
             URL url;
             String response = "";
+            HttpURLConnection conn = null;
             try {
                 url = new URL(requestURL);
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(5000);
-                conn.setConnectTimeout(10000);
+                /* Open connection */
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(15000);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
-
                 conn.setRequestProperty("Content-Type", "application/json");
-                JSONObject root = new JSONObject();
-                //
-                //{"email": "email@mail.si", "lastName": "ime", "firstName": "ime", "username": "username", "password": "abc"}
 
+                /* JSON object for creating user */
+                JSONObject root = new JSONObject();
                 root.put("username", username.getText().toString());
                 root.put("password", password.getText().toString());
                 root.put("lastName", surname.getText().toString());
                 root.put("firstName", name.getText().toString());
                 root.put("email", email.getText().toString());
-                //root.put("username", "username");
-                //root.put("password", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 
                 String str = root.toString();
                 byte[] outputBytes = str.getBytes("UTF-8");
                 OutputStream os = conn.getOutputStream();
                 os.write(outputBytes);
                 int responseCode = conn.getResponseCode();
-
+                /* Get response if connection is ok */
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
                     String line;
                     BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -202,32 +187,26 @@ public class RegisterActivity extends AppCompatActivity {
                     while ((line = br.readLine()) != null) {
                         response += line;
                     }
+                    br.close();
                 } else {
                     response = "";
                 }
+                os.close();
             } catch (Exception e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "There is some problem with connection, please check your network", Toast.LENGTH_LONG).show();
+                    }
+                });
                 e.printStackTrace();
+            } finally {
+                if(conn != null) {
+                    conn.disconnect();
+                }
             }
-
             return response;
         }
     }
 
-    public static String sha256(String base) {
-        try{
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(base.getBytes("UTF-8"));
-            StringBuilder hexString = new StringBuilder();
-
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if(hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-        } catch(Exception ex){
-            throw new RuntimeException(ex);
-        }
-    }
 }

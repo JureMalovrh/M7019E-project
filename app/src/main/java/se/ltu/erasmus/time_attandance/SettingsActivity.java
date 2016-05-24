@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class SettingsActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -27,6 +28,7 @@ public class SettingsActivity extends AppCompatActivity
     UserHelper helper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /* NW classes */
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -42,7 +44,12 @@ public class SettingsActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        setHeaderData(navigationView);
 
+        setViewHandlers();
+    }
+
+    private void setViewHandlers() {
         time_recording = (EditText) findViewById(R.id.seconds_recording);
         time_occurance = (EditText) findViewById(R.id.time_notification);
         server = (EditText) findViewById(R.id.server_address_tw);
@@ -55,6 +62,15 @@ public class SettingsActivity extends AppCompatActivity
         time_recording.setText(seconds+"");
         time_occurance.setText(minutes+"");
     }
+
+    private void setHeaderData(NavigationView navigationView) {
+        View navHeaderView = navigationView.inflateHeaderView(R.layout.nav_header_main);
+        TextView h_name= (TextView) navHeaderView.findViewById(R.id.header_displayname);
+        h_name.setText(helper.getDisplayname());
+        TextView h_email= (TextView) navHeaderView.findViewById(R.id.header_email);
+        h_email.setText(helper.getEmail());
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -88,13 +104,15 @@ public class SettingsActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /* Navigation view new methods handler */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if(id == R.id.nav_main_page){
-
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
         }
         else if (id == R.id.nav_all_bookings) {
             Intent intent = new Intent(this, AllBookingsActivity.class);
@@ -103,26 +121,33 @@ public class SettingsActivity extends AppCompatActivity
             Intent intent = new Intent(this, NewClockingActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
-
+            return true;
         } else if (id == R.id.nav_backup) {
-
+            Intent intent = new Intent(this, BackupActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_logout) {
-
+            //Logout user, remove him from the helper
+            Intent intent = new Intent(this, LoginActivity.class);
+            helper.setId(null);
+            helper.setDisplayname(null);
+            helper.setEmail(null);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
+    /* Method for saving data */
     public void saveSettings(View v) {
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE); // get shared preferences
         SharedPreferences.Editor editor = sharedPref.edit();
         int seconds_rec = Integer.parseInt(time_recording.getText().toString());
         int notif_occ = Integer.parseInt(time_occurance.getText().toString());
-        editor.putInt(getString(R.string.time_recording_seconds), seconds_rec);
+
+        editor.putInt(getString(R.string.time_recording_seconds), seconds_rec); // save values to a sp
         editor.putInt(getString(R.string.time_notification_minutes), notif_occ);
-        editor.commit();
+        editor.commit(); // commit the differences
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }

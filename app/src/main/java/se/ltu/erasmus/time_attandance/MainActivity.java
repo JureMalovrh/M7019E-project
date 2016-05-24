@@ -60,9 +60,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    SoundPool soundPool;
     UserHelper helper;
-
     TextView location;
     TextView time;
     TextView event;
@@ -72,9 +70,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         helper = (UserHelper) getApplicationContext();
 
+        /* NAVIGATION DRAWER PROPERTIES */
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        //floating action button handler -> new clocking activity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         try {
             assert fab != null;
@@ -88,8 +87,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
-
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -98,37 +95,43 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        setHeaderData(navigationView);
+        navigationView.setCheckedItem(R.id.nav_main_page);
 
+        /* END OF NAVIGATION DRAWER */
+
+        setViewHandlers();
+        getLastBooking(); //get last booking from user
+
+
+        setNotification();
+    }
+    /* Method that handles the header data in navigationView */
+    private void setHeaderData(NavigationView navigationView) {
         View navHeaderView = navigationView.inflateHeaderView(R.layout.nav_header_main);
         TextView h_name= (TextView) navHeaderView.findViewById(R.id.header_displayname);
         h_name.setText(helper.getDisplayname());
         TextView h_email= (TextView) navHeaderView.findViewById(R.id.header_email);
         h_email.setText(helper.getEmail());
-
+    }
+    /* Method that gets handler to main TW etc. */
+    private void setViewHandlers(){
         TextView main_name = (TextView) findViewById(R.id.maincontent_displayname);
         main_name.setText(helper.getDisplayname());
-
 
         location = (TextView) findViewById(R.id.maincontent_place);
         time = (TextView) findViewById(R.id.maincontent_time);
         event = (TextView) findViewById(R.id.maincontent_event);
-
-        getLastBooking();
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        int minutes = sharedPref.getInt(getString(R.string.time_notification_minutes), helper.SOUND_RECORDING_OCCURANCES);
-        setNotification( minutes);
-
-
-
-
     }
-
-    private void setNotification(int delay) {
+    /* Set notifications for user sound recording based on his preferences */
+    private void setNotification() {
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE); // get hidden preferences
+        int delay = sharedPref.getInt(getString(R.string.time_notification_minutes), helper.SOUND_RECORDING_OCCURANCES); // get time occurrence of notifications from user settings
         if(helper.getNotificationFired()){
             return;
         }
         helper.setNotificationFired(true);
-
+        /* create new pending intent that will trigger once the time is right */
         Intent notificationIntent = new Intent(this, RecordSoundReceiver.class);
         notificationIntent.putExtra("id", 0);
         notificationIntent.putExtra("id_user", helper.getId());
@@ -171,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return super.onOptionsItemSelected(item);
     }
-
+    /* Navigation view new methods handler */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -193,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Intent intent = new Intent(this, BackupActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_logout) {
+            //Logout user, remove him from the helper
             Intent intent = new Intent(this, LoginActivity.class);
             helper.setId(null);
             helper.setDisplayname(null);
@@ -209,20 +213,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         new LastBookingHandler(this).execute();
     }
 
-
+    /* Handler for getting last booking from a user*/
     public class LastBookingHandler extends AsyncTask<Void, Void, Boolean> {
 
         String urlString;
-
         private Context context;
-
         public LastBookingHandler(Context context) {
             this.context = context;
         }
-
         @Override
         protected void onPreExecute() {
-
             urlString = helper.getLastBookingApi();
         }
 
@@ -232,14 +232,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             URL url = null;
             try {
                 url = new URL(urlString);
-
+                // create new urlConnection
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
-
-                urlConnection.setReadTimeout(10000 /* milliseconds */);
-                urlConnection.setConnectTimeout(15000 /* milliseconds */);
-
-                //urlConnection.setDoOutput(true);
+                urlConnection.setReadTimeout(10000);
+                urlConnection.setConnectTimeout(15000);
                 urlConnection.connect();
 
                 if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
@@ -253,10 +250,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     br.close();
                     jsonString = sb.toString();
 
-                    System.out.println("JSON: " + jsonString);
                     JSONObject jo = new JSONObject(jsonString);
 
-                    if(jo.has("message")){
+                    if(jo.has("message")){ // we have message, that means no data yet
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -267,14 +263,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         });
 
                     }
-                    else {
+                    else { // no message, we already have booking
 
+                        /* Get all needed data from object and construct right strings */
                         String day = jo.getString("day");
                         String month = jo.getString("month");
                         String year = jo.getString("year");
                         String hour = jo.getString("hour");
                         String minute = jo.getString("minute");
-
 
                         String latitude = String.format("%.2f", jo.getDouble("latitude"));
                         String longitude = String.format("%.2f", jo.getDouble("longitude"));
@@ -284,7 +280,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         final String timeString = "Time: "+ day +". "+month+". "+year +", "+ hour+": "+minute;
                         final String locationString = "Location: "+  latitude +" : "+longitude;
                         final String eventString = "Event: "+typeOfEvent;
-
 
                         runOnUiThread(new Runnable() {
                             @Override
@@ -301,6 +296,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 e.printStackTrace();
             } catch (JSONException e) {
                 e.printStackTrace();
+            }finally {
+                if(urlConnection != null)
+                    urlConnection.disconnect();
             }
             return true;
         }

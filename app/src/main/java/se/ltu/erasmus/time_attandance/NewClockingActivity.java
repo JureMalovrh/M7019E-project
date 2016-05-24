@@ -82,6 +82,7 @@ public class NewClockingActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /* NW classes */
         super.onCreate(savedInstanceState);
         helper = (UserHelper) getApplicationContext();
         setContentView(R.layout.activity_new_clocking);
@@ -94,37 +95,32 @@ public class NewClockingActivity extends AppCompatActivity
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        setHeaderData(navigationView);
+        navigationView.setCheckedItem(R.id.nav_clocking);
+        /* End NW classes*/
 
+        /* check if we have permission to access fine location, show small question if we don't have */
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                Toast.makeText(this, "Location service must be turned on to use app", Toast.LENGTH_LONG).show();
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            }
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
-        else {
-            lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-            if(lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null ) {
-                createMap();
-                lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper());
-            }
-            else {
-                if(lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) != null) {
-                    createMap();
-                    lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, this.getMainLooper());
-                }
-                lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper());
-                lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, this.getMainLooper());
-            }
+        else { // we have the permission
+            getLocationHandlers();
+
         }
         //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        setViewHandler();
 
+
+
+    }
+    /* Method for a setting a view  */
+    private void setViewHandler() {
+        /* Set a spinner for a arrival event */
         spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.possible_access, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         spinner.setAdapter(adapter);
+
 
         longitude = (TextView) findViewById(R.id.longitude);
         latitude = (TextView) findViewById(R.id.latitude);
@@ -134,32 +130,57 @@ public class NewClockingActivity extends AppCompatActivity
         hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
         minute = mcurrentTime.get(Calendar.MINUTE);
 
-        clock.setText(hour+":"+minute);
+        clock.setText(hour+":"+minute); // set clock to be current
 
         day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
         month = mcurrentTime.get(Calendar.MONTH);
         year = mcurrentTime.get(Calendar.YEAR);
-        calendar.setText(day+"."+month+"."+year);
-
-
+        calendar.setText(day+"."+month+"."+year); // set date to be current
 
     }
+    /* Method for getting location handler, get location, request updates, request location from two sources -> network and gps */
+    private void getLocationHandlers() {
+        // check if we have permission
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+        lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+        if(lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null ) { // if there is known location, use it!
+            createMap(); // create map
+            lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper());
+        }
+        else {
+            if(lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) != null) { // maybe there is a network location, use it!
+                createMap(); // create map
+                lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, this.getMainLooper()); // request single update from network
+            }
+            lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, this.getMainLooper()); // request single update from gps
+            lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, this.getMainLooper());
+        }
+    }
 
+    /* Method that handles the header data in navigationView */
+    private void setHeaderData(NavigationView navigationView) {
+        View navHeaderView = navigationView.inflateHeaderView(R.layout.nav_header_main);
+        TextView h_name= (TextView) navHeaderView.findViewById(R.id.header_displayname);
+        h_name.setText(helper.getDisplayname());
+        TextView h_email= (TextView) navHeaderView.findViewById(R.id.header_email);
+        h_email.setText(helper.getEmail());
+    }
+    /* create map, get it in asynv manner */
     public void createMap(){
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
 
-
+    /* method for getting our request permitted or not */
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Intent i = new Intent(this, NewClockingActivity.class);
-                    startActivity(i);
+                    getLocationHandlers();
                 } else {
                     Toast.makeText(this, "You cannot use app without location enabled", Toast.LENGTH_LONG).show();
                     Intent i = new Intent(this, MainActivity.class);
@@ -203,50 +224,45 @@ public class NewClockingActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /* Navigation view new methods handler */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if(id == R.id.nav_main_page){
-
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
         }
         else if (id == R.id.nav_all_bookings) {
             Intent intent = new Intent(this, AllBookingsActivity.class);
             startActivity(intent);
-
-
         } else if (id == R.id.nav_clocking) {
-
-            /*AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-            float curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            float leftVolume = curVolume/maxVolume;
-            float rightVolume = curVolume/maxVolume;
-            int priority = 1;
-            int no_loop = 0;
-            float normal_playback_rate = 1f;
-            soundPool.play(soundPool.load(this, SoundEffectConstants.CLICK, 1), leftVolume, rightVolume, priority, no_loop, normal_playback_rate);*/
-
-
-            Intent intent = new Intent(this, NewClockingActivity.class);
-            startActivity(intent);
+            return true;
         } else if (id == R.id.nav_settings) {
-
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_backup) {
-
+            Intent intent = new Intent(this, BackupActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_logout) {
-
+            //Logout user, remove him from the helper
+            Intent intent = new Intent(this, LoginActivity.class);
+            helper.setId(null);
+            helper.setDisplayname(null);
+            helper.setEmail(null);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
+    /* method that is called when our map is ready. We set the marker to the last known location, to show user where he is*/
     @Override
     public void onMapReady(GoogleMap googleMap) {
         try {
+            //get one of locations
             l = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if(l == null){
                 l = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
@@ -255,7 +271,7 @@ public class NewClockingActivity extends AppCompatActivity
             double lon = l.getLongitude();
             longitude.setText(""+lon);
             latitude.setText(""+lat);
-
+            //animate moving
             CameraPosition position = CameraPosition.builder()
                     .target(new LatLng(lat,lon))
                     .zoom(16)
@@ -263,10 +279,11 @@ public class NewClockingActivity extends AppCompatActivity
                     .tilt(45)
                     .build();
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 1000, null);
+            //add marker for a location
             googleMap.addMarker(new MarkerOptions()
                     .position(new LatLng(lat, lon))
                     .title("Your location"));
-            googleMap.setMyLocationEnabled(true);
+            googleMap.setMyLocationEnabled(true); //enable my location
         }catch (SecurityException e){
             e.printStackTrace();
         }
@@ -276,13 +293,12 @@ public class NewClockingActivity extends AppCompatActivity
 
     @Override
     public void onGpsStatusChanged(int event) {
-        createMap();
-    }
 
+    }
     @Override
     public void onLocationChanged(Location location) {
         Log.e("LOCATION", "Location changed");
-
+        /* we got new location, generate new map */
         if(!locationUpdated){
             locationUpdated = true;
             createMap();
@@ -294,12 +310,12 @@ public class NewClockingActivity extends AppCompatActivity
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.e("LOCATION", "Status changed");
+
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-        Log.e("LOCATION", "Provider enabled");
+
     }
 
     @Override
@@ -308,19 +324,18 @@ public class NewClockingActivity extends AppCompatActivity
     }
 
     public void registerNewEvent(View v) {
-        if(longitude.getText().toString().equals("Wait for location")){
+        if(longitude.getText().toString().equals("Wait for location")){ // if we did not recceive location yet, say to the user to wait
             Toast.makeText(this, "Location not yet received. Please wait.", Toast.LENGTH_LONG).show();
         }
         else{
-
             longitudeVal = Double.parseDouble(longitude.getText().toString());
             latitudeVal = Double.parseDouble(latitude.getText().toString());
 
             typeOfEvent = spinner.getSelectedItem().toString();
-            new NewEventHandler(this).execute();
+            new NewEventHandler(this).execute(); // save new event
         }
     }
-
+    /* Handler for a time clicked event */
     public void timeClicked(View v){
         Calendar mcurrentTime = Calendar.getInstance();
 
@@ -343,7 +358,7 @@ public class NewClockingActivity extends AppCompatActivity
         mTimePicker.show();
 
     }
-
+    /* Handler for a date clicked event */
     public void dateHandler(View v) {
         Calendar mcurrentTime = Calendar.getInstance();
         day = mcurrentTime.get(Calendar.DAY_OF_MONTH);
@@ -366,20 +381,17 @@ public class NewClockingActivity extends AppCompatActivity
         }, year, month, day).show();
     }
 
-
+    /* Handler for creating new event */
     public class NewEventHandler extends AsyncTask<Void, Void, Boolean> {
 
         String urlString;
-
         private Context context;
-
         public NewEventHandler(Context contex) {
             this.context = contex;
         }
 
         @Override
         protected void onPreExecute() {
-
             urlString = helper.getNewBookingApi();
         }
 
@@ -388,26 +400,20 @@ public class NewClockingActivity extends AppCompatActivity
             boolean status = false;
             String response = "";
             try {
-                response = performPostCall(urlString, new HashMap<String, Object>() {
-                    private static final long serialVersionUID = 1L;
-                    {
-                        put("Accept", "application/json");
-                        put("Content-Type", "application/json");
-                    }
-                });
+                response = performPostCall(urlString);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            if (!response.equalsIgnoreCase("")) {
+            if (!response.equals("")) { // not empty response
                 try {
-
                     JSONObject jRoot = new JSONObject(response);
                     System.out.println(jRoot.toString());
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                status = true;
             } else {
                 status = false;
             }
@@ -416,26 +422,42 @@ public class NewClockingActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Boolean result) {
-            urlString = helper.getNewBookingApi();
-        }
+            if(result){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Event successfully saved!", Toast.LENGTH_LONG).show();
+                    }
+                });
 
-        public String performPostCall(String requestURL, HashMap<String, Object> postDataParams) {
+            } else {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Problems with event saving!", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }
+        /* Perform actual post call */
+        public String performPostCall(String requestURL) {
 
             URL url;
             String response = "";
+            HttpURLConnection conn = null;
             try {
                 url = new URL(requestURL);
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(5000);
-                conn.setConnectTimeout(10000);
+                //open conection
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(15000);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
 
                 conn.setRequestProperty("Content-Type", "application/json");
                 JSONObject root = new JSONObject();
-                //
+                // create json to send
                 root.put("user", helper.getId());
                 root.put("minute", minute);
                 root.put("hour", hour);
@@ -446,29 +468,30 @@ public class NewClockingActivity extends AppCompatActivity
                 root.put("latitude", latitudeVal);
                 root.put("typeOfEvent", typeOfEvent);
 
-
-
                 String str = root.toString();
-                Log.e("str", str);
                 byte[] outputBytes = str.getBytes("UTF-8");
                 OutputStream os = conn.getOutputStream();
                 os.write(outputBytes);
                 int responseCode = conn.getResponseCode();
-
+                os.close();
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    // read the response
                     String line;
                     BufferedReader br = new BufferedReader(new InputStreamReader(
                             conn.getInputStream()));
                     while ((line = br.readLine()) != null) {
                         response += line;
                     }
+                    br.close();
                 } else {
                     response = "";
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if(conn != null)
+                    conn.disconnect();
             }
-
             return response;
         }
     }

@@ -21,7 +21,7 @@
 
 
         <activity android:name=".LoginActivity"
-            android:label="Login">
+            android:label="Time attendance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

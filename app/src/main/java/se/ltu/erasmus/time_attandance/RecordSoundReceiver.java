@@ -31,13 +31,14 @@ import javax.net.ssl.HttpsURLConnection;
 public class RecordSoundReceiver  extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent ) {
+            /* class for receiving notification updates, this class is called when there is time to perform new notification */
+
             NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+            Intent resultIntent = new Intent(context, RawSoundRecordingActivity.class); // call correct activity
+            String userid = intent.getStringExtra("id_user"); // get id from previous intent
 
-            Intent resultIntent = new Intent(context, RawSoundRecordingActivity.class);
-            String userid = intent.getStringExtra("id_user");
-
-            resultIntent.putExtra("id_user", userid);
-
+            resultIntent.putExtra("id_user", userid); // and send it again
+            // new pending intent
             PendingIntent resultPendingIntent =
                     PendingIntent.getActivity(
                             context,
@@ -46,7 +47,7 @@ public class RecordSoundReceiver  extends BroadcastReceiver {
                             PendingIntent.FLAG_UPDATE_CURRENT
                     );
 
-
+            // build notification
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(context)
                             .setSmallIcon(R.drawable.ic_keyboard_voice_black_24dp)
@@ -57,7 +58,7 @@ public class RecordSoundReceiver  extends BroadcastReceiver {
             Notification n = mBuilder.build();
 
             int id = intent.getIntExtra("id", 0);
-            notificationManager.notify(id, n);
+            notificationManager.notify(id, n); // notify and execute notification
 
         }
 

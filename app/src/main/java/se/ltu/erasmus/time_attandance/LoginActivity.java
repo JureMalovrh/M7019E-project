@@ -50,10 +50,8 @@ public class LoginActivity extends AppCompatActivity {
         } catch (Settings.SettingNotFoundException e){
             e.printStackTrace();
         }
-        helper = ((UserHelper) getApplicationContext());
-        username_tw = (TextView) findViewById(R.id.username_tw);
-        password_tw = (TextView) findViewById(R.id.password_tw);
-        error = (TextView) findViewById(R.id.error_tw);
+
+        setViewHandlers();
 
     }
 
@@ -63,17 +61,19 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void loginButtonClicked(View v) {
-        /*TODO: create request to check if persons inserted data is correct, save his requests into SharedPreferences so he don't need to login every time */
-
         new LoginHandler(this).execute();
+    }
 
-
+    public void setViewHandlers() {
+        helper = ((UserHelper) getApplicationContext());
+        username_tw = (TextView) findViewById(R.id.username_tw);
+        password_tw = (TextView) findViewById(R.id.password_tw);
+        error = (TextView) findViewById(R.id.error_tw);
     }
 
 
     /* Class for handling login of the user */
     public class LoginHandler extends AsyncTask<Void, Void, Boolean> {
-
         String urlString;
         private Context context;
         public LoginHandler(Context context) {
@@ -94,8 +94,7 @@ public class LoginActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            if (!response.equals("")) {
+            if (!response.equals("") && !response.equals("connection-problem")) {
                 try {
                     JSONObject jRoot = new JSONObject(response);
                     if(jRoot.has("message")){ // wrong username or pass
@@ -136,37 +135,37 @@ public class LoginActivity extends AppCompatActivity {
             HttpURLConnection conn=null;
             try {
                 url = new URL(requestURL);
-
+                /* open url connection */
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(5000);
                 conn.setConnectTimeout(10000);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
-
                 conn.setRequestProperty("Content-Type", "application/json");
+
+                /*JSON obj for sending*/
                 JSONObject root = new JSONObject();
-                //
-
-
                 root.put("username", username_tw.getText().toString());
                 root.put("password", sha256(password_tw.getText().toString()));
-
 
                 String str = root.toString();
                 byte[] outputBytes = str.getBytes("UTF-8");
                 OutputStream os = conn.getOutputStream();
                 os.write(outputBytes);
+                os.close();
                 int responseCode = conn.getResponseCode();
 
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    /* Read whole response */
                     String line;
                     BufferedReader br = new BufferedReader(new InputStreamReader(
                             conn.getInputStream()));
                     while ((line = br.readLine()) != null) {
                         response += line;
                     }
-                } else {
+                    br.close();
+                } else { //just empty response -> error
                     response = "";
                 }
 
@@ -176,7 +175,9 @@ public class LoginActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(getApplicationContext(), "There was some problem with the connection. Check your internet connection", Toast.LENGTH_LONG).show();
                     }
+
                 });
+                response = "connection-problem";
                 e.printStackTrace();
             }
             finally {
@@ -193,7 +194,6 @@ public class LoginActivity extends AppCompatActivity {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(base.getBytes("UTF-8"));
             StringBuilder hexString = new StringBuilder();
-
             for (int i = 0; i < hash.length; i++) {
                 String hex = Integer.toHexString(0xff & hash[i]);
                 if(hex.length() == 1) hexString.append('0');
