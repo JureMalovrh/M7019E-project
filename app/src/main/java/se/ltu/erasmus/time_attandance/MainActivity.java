@@ -3,9 +3,12 @@ package se.ltu.erasmus.time_attandance;
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.SettingInjectorService;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
@@ -15,6 +18,7 @@ import android.media.ToneGenerator;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -110,16 +114,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         event = (TextView) findViewById(R.id.maincontent_event);
 
         getLastBooking();
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        int minutes = sharedPref.getInt(getString(R.string.time_notification_minutes), helper.SOUND_RECORDING_OCCURANCES);
+        setNotification( minutes);
 
-        Intent intent = new Intent(this, RawSoundRecordingActivity.class);
-        intent.putExtra("id", helper.getId());
-        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        long recurring = (30 * 60000);  // in milliseconds
-        am.setRepeating(AlarmManager.RTC, Calendar.getInstance().getTimeInMillis(), recurring, sender);
+
 
 
     }
+
+    private void setNotification(int delay) {
+        if(helper.getNotificationFired()){
+            return;
+        }
+        helper.setNotificationFired(true);
+
+        Intent notificationIntent = new Intent(this, RecordSoundReceiver.class);
+        notificationIntent.putExtra("id", 0);
+        notificationIntent.putExtra("id_user", helper.getId());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay*1000;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -159,26 +178,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if(id == R.id.nav_main_page){
-
+            return true;
         }
         else if (id == R.id.nav_all_bookings) {
             Intent intent = new Intent(this, AllBookingsActivity.class);
             startActivity(intent);
-
-
         } else if (id == R.id.nav_clocking) {
-
-            /*AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-            float curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            float leftVolume = curVolume/maxVolume;
-            float rightVolume = curVolume/maxVolume;
-            int priority = 1;
-            int no_loop = 0;
-            float normal_playback_rate = 1f;
-            soundPool.play(soundPool.load(this, SoundEffectConstants.CLICK, 1), leftVolume, rightVolume, priority, no_loop, normal_playback_rate);*/
-
-
             Intent intent = new Intent(this, NewClockingActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
@@ -193,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             helper.setDisplayname(null);
             helper.setEmail(null);
             startActivity(intent);
-
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

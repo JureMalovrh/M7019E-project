@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <application
         android:name=".UserHelper"
@@ -19,18 +20,20 @@
         android:theme="@style/AppTheme">
 
 
-        <activity android:name=".LoginActivity">
+        <activity android:name=".LoginActivity"
+            android:label="Login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity">
+        <activity android:name=".RegisterActivity"
+            android:label="Register">
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main"
+            android:label="Home page"
             android:parentActivityName=".LoginActivity"
             android:soundEffectsEnabled="true"
             android:theme="@style/AppTheme.NoActionBar">
@@ -40,7 +43,7 @@
         </activity>
         <activity
             android:name=".AllBookingsActivity"
-            android:label="@string/title_activity_all_bookings"
+            android:label="All bookings"
             android:parentActivityName=".MainActivity"
             android:soundEffectsEnabled="true"
             android:theme="@style/AppTheme.NoActionBar">
@@ -50,7 +53,7 @@
         </activity>
         <activity
             android:name=".NewClockingActivity"
-            android:label="@string/title_activity_new_clocking"
+            android:label="New clocking"
             android:parentActivityName=".MainActivity"
             android:soundEffectsEnabled="true"
             android:theme="@style/AppTheme.NoActionBar">
@@ -60,7 +63,7 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
+            android:label="Settings"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
@@ -69,9 +72,16 @@
         </activity>
         <activity
             android:name=".BackupActivity"
-            android:label="@string/title_activity_backup"
+            android:label="Backup data"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+
+        <activity
+            android:name=".RawSoundRecordingActivity"
+            android:label="Record sound"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <receiver android:name=".RecordSoundReceiver" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

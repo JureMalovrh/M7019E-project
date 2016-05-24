@@ -58,6 +58,16 @@ public class UserHelper extends Application{
     }
 
     String email = "";
+
+    public Boolean getNotificationFired() {
+        return notificationFired;
+    }
+
+    public void setNotificationFired(Boolean notificationFired) {
+        this.notificationFired = notificationFired;
+    }
+
+    Boolean notificationFired = false;
     public UserHelper(){}
 
     public String getLoginApi(){ return server+"auth/signin";}
@@ -68,6 +78,7 @@ public class UserHelper extends Application{
     public String getAllBookingsApi() {return  server+"bookings/list/"+id;}
     public String uploadBookingsApi() { return  server+"bookings/backup/load";}
     public String downloadBookingsApi() { return  server+"bookings/backup/save"+id;}
+    public String getNewRecordingApi() { return  server+"recordings";}
 
 }
 

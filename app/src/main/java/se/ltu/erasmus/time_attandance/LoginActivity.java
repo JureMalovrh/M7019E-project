@@ -2,6 +2,7 @@ package se.ltu.erasmus.time_attandance;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +19,9 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.HashMap;
@@ -68,21 +71,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-
+    /* Class for handling login of the user */
     public class LoginHandler extends AsyncTask<Void, Void, Boolean> {
 
         String urlString;
-
         private Context context;
-
-        public LoginHandler(Context contex) {
-            this.context = contex;
+        public LoginHandler(Context context) {
+            this.context = context;
         }
 
         @Override
         protected void onPreExecute() {
-
-            urlString = helper.getLoginApi();
+            urlString = helper.getLoginApi(); //get API for login
         }
 
         @Override
@@ -90,33 +90,24 @@ public class LoginActivity extends AppCompatActivity {
             boolean status = false;
             String response = "";
             try {
-                response = performPostCall(urlString, new HashMap<String, String>() {
-                    private static final long serialVersionUID = 1L;
-                    {
-                        put("Accept", "application/json");
-                        put("Content-Type", "application/json");
-                    }
-                });
+                response = performPostCall(urlString);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            if (!response.equalsIgnoreCase("")) {
+            if (!response.equals("")) {
                 try {
-
                     JSONObject jRoot = new JSONObject(response);
-                    if(jRoot.has("message")){
+                    if(jRoot.has("message")){ // wrong username or pass
                         status = false;
                     }
                     else {
                         status = true;
-                        UserHelper helper = (UserHelper) getApplicationContext();
+                        UserHelper helper = (UserHelper) getApplicationContext(); // fill the helper class, so we know everything about user when we need.
                         helper.setId(jRoot.getString("_id"));
                         helper.setDisplayname(jRoot.getString("displayName"));
                         helper.setEmail(jRoot.getString("email"));
-                        int i = 0;
                     }
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -128,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Boolean result) {
+            /* if result is true, the log the user in, otherwise, show error message */
             if (result) {
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
@@ -136,8 +128,8 @@ public class LoginActivity extends AppCompatActivity {
             }
             return;
         }
-
-        public String performPostCall(String requestURL, HashMap<String, String> postDataParams) {
+        /* Creates POST call to a given url, we create new JSON and send it to a server */
+        public String performPostCall(String requestURL) {
 
             URL url;
             String response = "";
@@ -159,8 +151,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 root.put("username", username_tw.getText().toString());
                 root.put("password", sha256(password_tw.getText().toString()));
-                //root.put("username", "username");
-                //root.put("password", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+
 
                 String str = root.toString();
                 byte[] outputBytes = str.getBytes("UTF-8");
@@ -178,16 +169,25 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     response = "";
                 }
-            } catch (Exception e) {
+
+            }catch (Exception e){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "There was some problem with the connection. Check your internet connection", Toast.LENGTH_LONG).show();
+                    }
+                });
                 e.printStackTrace();
-            }finally {
-                conn.disconnect();
+            }
+            finally {
+                if(conn != null)
+                    conn.disconnect();
             }
 
             return response;
         }
     }
-
+    /* Returns the sha256 string */
     public static String sha256(String base) {
         try{
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
